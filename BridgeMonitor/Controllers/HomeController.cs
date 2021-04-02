@@ -1,11 +1,13 @@
-﻿using BridgeMonitor.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using BridgeMonitor.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace BridgeMonitor.Controllers
 {
@@ -23,15 +25,27 @@ namespace BridgeMonitor.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult Fermeturepont()
         {
-            return View();
+            var info = GetFromAPI();
+            return View(info);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private static List<Bateau> GetFromAPI()
+        {
+            using (var client = new HttpClient())
+            {
+                var response = client.GetAsync("https://api.alexandredubois.com/pont-chaban/api.php");
+                var stringResult = response.Result.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<List<Bateau>>(stringResult.Result);
+                return result;
+            }
         }
     }
 }

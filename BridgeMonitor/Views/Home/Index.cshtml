@@ -1,8 +1,27 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Prochaine fermeture";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+    <h1 class="display-4">Prochaine fermeture</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+<table class="table">
+<thead>
+<tr>
+    <th>Prochaine réouverture : </th>
+    <th>Nom du bateau / Évenement ayant causé la fermeture : </th>
+    <th>Durée de la fermeture : </th>
+    <th>Risque de bouchons : </th>
+</tr>
+</thead>
+
+if (tab.Contains(7) || tab.Contains(8) || tab.Contains(9) || tab.Contains(17) || tab.Contains(18) || tab.Contains(19))
+{
+<p>Elevé</p>
+}
+else
+{
+<p>Faible</p>
+}
+}
