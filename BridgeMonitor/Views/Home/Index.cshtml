@@ -1,27 +1,127 @@
 ﻿@{
-    ViewData["Title"] = "Prochaine fermeture";
+    ViewData["Title"] = "Prochaine Fermeture";
+
+    Bateau info = ViewData["Info0"] as Bateau;
+
+    string GetTime(DateTime time)
+    {
+        TimeSpan timeSpan = time.Subtract(DateTime.Now);
+        return GetTimeSpan(timeSpan);
+    }
+
+    string GetTimeSpan(TimeSpan timeSpan)
+    {
+        return string.Format(
+            "{0}, {1} {2} et {3}",
+            Clean(timeSpan.Days, "jours"),
+            Clean(timeSpan.Hours, "heures"),
+            Clean(timeSpan.Minutes, "minutes"),
+            Clean(timeSpan.Seconds, "secondes")
+            );
+    }
+
+    string Clean(int amount, string mot)
+    {
+        return string.Format("{0} {1}{2}", amount, mot, "");
+    }
 }
 
-<div class="text-center">
-    <h1 class="display-4">Prochaine fermeture</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
-<table class="table">
-<thead>
-<tr>
-    <th>Prochaine réouverture : </th>
-    <th>Nom du bateau / Évenement ayant causé la fermeture : </th>
-    <th>Durée de la fermeture : </th>
-    <th>Risque de bouchons : </th>
-</tr>
-</thead>
+<style>
+    .dates {
+        font-size: 80%;
+    }
+</style>
 
-if (tab.Contains(7) || tab.Contains(8) || tab.Contains(9) || tab.Contains(17) || tab.Contains(18) || tab.Contains(19))
-{
-<p>Elevé</p>
-}
-else
-{
-<p>Faible</p>
-}
-}
+<script>
+    function getTimeClose() {
+        var date = new Date(toLocalDate("@info.ClosingDate"));
+        var d = getTime(date - Date.now());
+        return (d.days, "jours") + ", " + (d.hours, "heures") + " " + (d.minutes, "minutes") + " et " + (d.seconds, "secondes");
+    }
+    function getTime(d) {
+        var time = d / 1000;
+        var days = Math.floor(time / 86400);
+        time -= days * 86400;
+        var hours = Math.floor(time / 3600) % 24;
+        time -= hours * 3600;
+        var minutes = Math.floor(time / 60) % 60;
+        time -= minutes * 60;
+        var seconds = Math.floor(time);
+        return {
+            days: days,
+            hours: hours,
+            minutes: minutes,
+            seconds: seconds
+        };
+    }
+    function toLocalDate(date) {
+        var res = date.split("/");
+        return res[1] + "/" + res[0] + "/" + res[2];
+    }
+</script>
+
+<h1>@ViewData["Title"]</h1>
+
+<br />
+<table>
+    <thead>
+        <tr>
+            <th>Fermeture le :</th>
+            <th>Réouverture le :</th>
+            <th>Prochaine Arrivée Ou Evenement :</th>
+            <th>Durée de la prochaine fermeture :</th>
+            <th>Risque d'embouteillage :</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Fermeture le : <span class="dates">@info.ClosingDate.ToString("dddd dd MMMM yyyy à HH:mm")</span></td>
+
+        <td>Réouverture le : <span class="dates">@info.ReopeningDate.ToString("dddd dd MMMM yyyy à HH:mm")</span></td>
+
+        <td>
+
+            @if (@info.BoatName != "MAINTENANCE")
+            {
+                <span class="dates">@info.BoatName</span>
+            }
+            else
+            {
+                <span class="dates" style="color: red">@info.BoatName</span>
+
+            }
+        </td>
+
+        <td> <span class="dates">@GetTimeSpan(info.ReopeningDate.Subtract(info.ClosingDate))</span></td>
+
+        <td>
+
+            @if ((info.ClosingDate.Hour >= 7 && info.ClosingDate.Hour <= 9) || (info.ClosingDate.Hour >= 17 && info.ClosingDate.Hour <= 19))
+            {
+                <span class="dates" style="color: red">Elevé</span>
+            }
+            else
+            {
+                <span class="dates" style="color: green">Faible</span>
+            }
+        </td>
+
+     </tr>
+    </tbody>
+    <p style="color: green">
+        <span>
+            @if (info.ClosingDate.CompareTo(DateTime.Now) > 0)
+            {
+                @GetTime(info.ClosingDate)
+
+                <script>
+                    setInterval(() => {
+                        var countDown = document.getElementById("CloseCountDown");
+                        countDown.innerText = getTimeCLose();
+                    },
+                        1000);
+                </script>
+            }
+        </span> avant la prochaine fermeture
+    </p>
+</table>

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using BridgeMonitor.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -22,13 +24,27 @@ namespace BridgeMonitor.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            {
+                List<Bateau> apiInfo = GetFromAPI();
+                apiInfo.Sort((s1, s2) => DateTimeOffset.Compare(s1.ClosingDate, s2.ClosingDate));
+
+                foreach (var ferme1 in apiInfo)
+                {
+                    if (DateTimeOffset.Compare(DateTimeOffset.Now, ferme1.ClosingDate) < 0)
+                    {
+                        ViewData["Info0"] = ferme1;
+                        break;
+                    }
+                }
+
+                return View();
+            }
         }
 
         public IActionResult Fermeturepont()
         {
-            var info = GetFromAPI();
-            return View(info);
+            ViewData["Boats"] = GetFromAPI();
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -45,6 +61,7 @@ namespace BridgeMonitor.Controllers
                 var stringResult = response.Result.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<List<Bateau>>(stringResult.Result);
                 return result;
+
             }
         }
     }

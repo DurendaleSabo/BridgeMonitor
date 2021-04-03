@@ -1,68 +1,83 @@
-﻿@{ ViewData["Title"] = "Toutes les fermetures"; }
+﻿@{
+    ViewData["Title"] = "Toutes les Fermetures";
 
-@model List<Bateau>
-
-@{
-
-    DateTime LocalDate = DateTime.UtcNow;
-
-}
-<h1>@ViewData["Title"]</h1>
-<h2>Date de Fermeture</h2>
-<table class="table">
-    <thead>
-    <tr>
-        <th>Nom</th>
-        <th>Type de fermeture</th>
-        <th>Date de fermeture</th>
-        <th>Date de réouverture</th>
-        <th>Durée de la fermeture en heure</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    @foreach (var fermetures in Model)
+    List<Bateau> boats = ViewData["Boats"] as List<Bateau>;
+    List<Bateau> oldBoats = new List<Bateau>();
+    for (int i = 0; i < boats.Count; i++)
     {
-        TimeSpan diff = @fermetures.ReopeningDate - @fermetures.ClosingDate;
-
-        <tr>
-            @if (@fermetures.ClosingDate > LocalDate)
-            {
-                <td>@fermetures.BoatName</td>
-                <td>@fermetures.ClosingType</td>
-                <td>@fermetures.ClosingDate.ToString("dddd MMMM yyyy, HH:mm:ss")</td>
-                <td>@fermetures.ReopeningDate.ToString("dddd MMMM yyyy, HH:mm:ss")</td>
-                <td>@diff</td>
-            }
-        </tr>
+        if (boats[i].ClosingDate.CompareTo(DateTime.Now) < 0)
+        {
+            oldBoats.Add(boats[i]);
+            boats.RemoveAt(i);
+        }
     }
-    </tbody>
-</table>
-<h2>Les précédentes dates de fermeture</h2>
-<table class="table">
-    <thead>
-    <tr>
-        <th>Nom</th>
-        <th>Type de fermeture</th>
-        <th>Date de fermeture</th>
-        <th>Date de réouverture</th>
-        <th>Durée de la fermeture en heure</th>
-    </tr>
-    </thead>
-    <tbody>
+    // Sort
+    boats.Sort((s1, s2) => DateTimeOffset.Compare(s1.ClosingDate, s2.ClosingDate));
+    oldBoats.Sort((s1, s2) => DateTimeOffset.Compare(s1.ClosingDate, s2.ClosingDate));
 
-    @foreach (var fermetures in Model)
+    string GetTime(Bateau boat)
     {
-        TimeSpan diff = @fermetures.ReopeningDate - @fermetures.ClosingDate;
-        <tr>
-            @if (@fermetures.ClosingDate < LocalDate)
+        TimeSpan timeSpan = boat.ReopeningDate.Subtract(boat.ClosingDate);
+        return string.Format(
+            "{0} ,{1} {2} et {3}",
+            Pluriel(timeSpan.Days, "jour"),
+            Pluriel(timeSpan.Hours, "heure"),
+            Pluriel(timeSpan.Minutes, "minute"),
+            Pluriel(timeSpan.Seconds, "seconde")
+        );
+    }
+
+    string Pluriel(int amount, string mot)
+    {
+        return string.Format("{0} {1}{2}", amount, mot, amount > 1 ? "s" : "");
+    }
+}
+
+<h3>Prochaine fermeture</h3>
+<table>
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Date de fermeture</th>
+                <th scope="col">Heure de fermeture</th>
+                <th scope="col">Durée de fermeture</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < boats.Count; i++)
             {
-                <td>@fermetures.BoatName</td>
-                <td>@fermetures.ClosingType</td>
-                <td>@fermetures.ClosingDate.ToString("dddd MMMM yyyy, HH:mm:ss")</td>
-                <td>@fermetures.ReopeningDate.ToString("dddd MMMM yyyy, HH:mm:ss")</td>
-                
+                <tr>
+                    <td>@boats[i].BoatName</td>
+                    <td>@boats[i].ClosingDate.ToString("dddd, dd MMMM yyyy")</td>
+                    <td>@boats[i].ClosingDate.ToString("HH:mm")</td>
+                    <td>@GetTime(boats[i])</td>
+
+                </tr>
             }
-        </tr>}
-    </tbody>
-</table>
+        </tbody>
+    </table>
+<h3> Ancienne fermeture</h3>
+<table>
+        <thead>
+            <tr>
+                <th scope="col">Nom de l'événement</th>
+                <th scope="col">Date de fermeture</th>
+                <th scope="col">Heure de fermeture</th>
+                <th scope="col">Durée de fermeture</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < oldBoats.Count; i++)
+            {
+                <tr>
+                    <td>@oldBoats[i].BoatName</td>
+                    <td>@oldBoats[i].ClosingDate.ToString("dddd, dd MMMM yyyy")</td>
+                    <td>@oldBoats[i].ClosingDate.ToString("HH:mm")</td>
+                    <td>@GetTime(oldBoats[i])</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
